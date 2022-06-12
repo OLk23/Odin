@@ -185,6 +185,23 @@ set :: proc(ba: ^Bit_Array, #any_int index: uint, allocator := context.allocator
 	return true
 }
 
+unset :: proc(ba: ^Bit_Array, #any_int index: uint, allocator := context.allocator) -> (ok: bool) {
+
+    idx := int(index) - ba.bias
+
+    if ba == nil || int(index) < ba.bias { return false }
+    context.allocator = allocator
+
+    leg_index := idx >> INDEX_SHIFT
+    bit_index := idx &  INDEX_MASK
+
+    resize_if_needed(ba, leg_index) or_return
+
+    ba.max_index = max(idx, ba.max_index)
+    ba.bits[leg_index] &= 1 << ~uint(bit_index)
+    return true
+}
+
 /*
 	A helper function to create a Bit Array with optional bias, in case your smallest index is non-zero (including negative).
 */
